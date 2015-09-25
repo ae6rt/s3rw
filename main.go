@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
@@ -53,7 +52,6 @@ func main() {
 
 		resp, err := svc.GetObject(params)
 		if err != nil {
-			log.Println(err.Error())
 			log.Fatal(err)
 		}
 
@@ -62,8 +60,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = ioutil.WriteFile(*fileName, data, 0644)
-		if err != nil {
+		if err := ioutil.WriteFile(*fileName, data, 0644); err != nil {
 			log.Fatal(err)
 		}
 	case "put":
@@ -72,25 +69,14 @@ func main() {
 			log.Fatal(err)
 		}
 		params := &s3.PutObjectInput{
-			Key:                  aws.String(*objectKey),
 			Bucket:               aws.String(*bucketName),
+			Key:                  aws.String(*objectKey),
 			Body:                 bytes.NewReader(data),
 			ServerSideEncryption: aws.String("AES256"),
 		}
-
-		_, err = svc.PutObject(params)
-
-		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok {
-				log.Println(awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
-				if reqErr, ok := err.(awserr.RequestFailure); ok {
-					log.Fatal(reqErr.Code(), reqErr.Message(), reqErr.StatusCode(), reqErr.RequestID())
-				}
-			} else {
-				log.Fatal(err.Error())
-			}
+		if _, err = svc.PutObject(params); err != nil {
+			log.Fatal(err.Error())
 		}
-
 	default:
 		log.Fatalf("Operation not supported %s\n", *op)
 	}
