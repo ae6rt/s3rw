@@ -7,10 +7,15 @@ COMMIT_ID := $(shell git rev-parse --short HEAD)
 SDK_INFO := $(shell go version)
 LD_FLAGS := '-X "main.buildInfo=Version: $(VERSION), commitID: $(COMMIT_ID), build date: $(DATE), SDK: $(SDK_INFO)"'
 
-all: clean binaries 
+all: binaries 
 
-binaries: 
-	godep go build -ldflags $(LD_FLAGS) 
+gb: 
+	@which gb > /dev/null || go get github.com/constabulary/gb/...
+
+binaries:  gb
+	gb build -ldflags $(LD_FLAGS) 
 
 clean: 
-	go clean
+	rm -rf bin/*
+
+phony: .all .binaries clean gb
