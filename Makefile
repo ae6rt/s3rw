@@ -18,4 +18,4 @@ binaries:  gb
 clean: 
 	rm -rf bin/*
 
-phony: .all .binaries clean gb
+.PHONY: all binaries clean gb
