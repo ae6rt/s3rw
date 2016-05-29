@@ -20,6 +20,8 @@ var (
 	profile     = flag.String("profile", "", "AWS profile from $HOME/.aws/credentials to use")
 	region      = flag.String("region", "", "AWS region")
 	op          = flag.String("op", "", "get or put")
+	publicRead  = flag.Bool("make-public", false, "Make object publicly readable")
+	contentType = flag.String("content-type", "", "MIME type")
 	versionFlag = flag.Bool("version", false, "Print version info and exit.")
 
 	buildInfo string
@@ -73,6 +75,12 @@ func main() {
 			Key:                  aws.String(*objectKey),
 			Body:                 bytes.NewReader(data),
 			ServerSideEncryption: aws.String("AES256"),
+		}
+		if *publicRead {
+			params.ACL = aws.String("public-read")
+		}
+		if *contentType != "" {
+			params.ContentType = aws.String(*contentType)
 		}
 		if _, err = svc.PutObject(params); err != nil {
 			log.Fatal(err.Error())
